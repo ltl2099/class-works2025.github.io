@@ -1,0 +1,419 @@
+/* --- 全局与主题 (扁平化设计) --- */
+:root {
+    --primary-color: #27ae60;      /* 扁平化绿色 (Flat Green) */
+    --secondary-color: #229954;    /* 深一点的扁平绿 */
+    --background-color: #f8f9fa;   /* 极浅灰色背景 */
+    --column-background: #f1f3f5;  /* 看板列背景 */
+    --card-background: #FFFFFF;
+    --text-color: #343a40;
+    --text-color-light: #6c757d;
+    --border-color: #e9ecef;
+    --priority-high: #e74c3c;      /* 扁平红 */
+    --priority-medium: #f39c12;    /* 扁平橙 */
+    --priority-low: #3498db;       /* 扁平蓝 */
+    --shadow-subtle: 0 2px 4px rgba(0,0,0,0.06); /* 微妙的阴影 */
+}
+
+/* 基础样式重置 */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* --- 头部与导航 --- */
+header {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+header h1 .fa-leaf {
+    margin-right: 10px;
+}
+
+nav button {
+    background: none;
+    border: none;
+    color: var(--text-color-light);
+    padding: 0.6rem 1.2rem;
+    margin: 0 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+nav button:hover {
+    color: var(--text-color);
+}
+
+nav button.active {
+    background-color: #e8f8f1; /* 淡淡的绿色背景 */
+    color: var(--secondary-color);
+}
+nav button .fa-solid {
+    margin-right: 8px;
+}
+
+/* --- 内容区域 --- */
+main {
+    padding: 2rem;
+}
+
+.content-section { display: none; }
+.content-section.active { display: block; }
+
+/* --- 看板 (Kanban Board) - 美化版 --- */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.kanban-column {
+    background-color: var(--column-background);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.kanban-column h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 1rem;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.kanban-column h3 .fa-solid {
+    margin-right: 10px;
+    color: var(--text-color-light);
+}
+
+.tasks {
+    flex-grow: 1;
+    padding: 0.5rem 1rem 1rem 1rem;
+    min-height: 60vh;
+}
+
+.task-card {
+    background-color: var(--card-background);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    box-shadow: var(--shadow-subtle);
+    cursor: grab;
+    border-left: 5px solid;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.task-card:active {
+    cursor: grabbing;
+    background-color: #f7f7f7;
+}
+
+/* 优先级颜色 */
+.task-card.priority-high { border-left-color: var(--priority-high); }
+.task-card.priority-medium { border-left-color: var(--priority-medium); }
+.task-card.priority-low { border-left-color: var(--priority-low); }
+
+/* 卡片内文字排版 */
+.task-card p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color-light);
+}
+.task-card p:not(:last-child) {
+    margin-bottom: 0.5rem;
+}
+.task-card p strong {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text-color);
+    display: block; /* 标题独占一行 */
+    margin-bottom: 0.25rem;
+}
+
+/* 优化 "添加新任务" 按钮 */
+.add-task-btn {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background-color: transparent;
+    color: var(--text-color-light);
+    border: 2px dashed var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.add-task-btn:hover {
+    background-color: var(--card-background);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+
+/* --- 表格通用样式 --- */
+.table-container {
+    overflow-x: auto;
+    background-color: var(--card-background);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+th, td {
+    padding: 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+th {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+tbody tr:hover {
+    background-color: var(--background-color);
+}
+.action-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin: 0 5px;
+    color: var(--text-color-light);
+    transition: color 0.2s ease;
+}
+.edit-btn:hover { color: var(--primary-color); }
+.delete-btn:hover { color: var(--priority-high); }
+
+.add-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s ease;
+}
+.add-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* --- 设置与积分 --- */
+#settings-section h2 {
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    font-weight: 600;
+}
+.settings-card {
+    background: var(--card-background);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+#password-gate, #settings-content {
+    max-width: 800px;
+    margin: auto;
+}
+#password-gate input, #password-gate button {
+    display: block;
+    width: 90%;
+    max-width: 350px;
+    margin: 1rem auto;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+#password-gate button {
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+}
+
+.settings-card input {
+    display: block;
+    width: 95%;
+    max-width: 400px;
+    padding: 0.7rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+.settings-card button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.rules ul { list-style: none; padding: 0; }
+.rules li { margin-bottom: 0.5rem; }
+.rules .score-green { color: var(--secondary-color); font-weight: bold; }
+.rules .score-blue { color: var(--priority-low); font-weight: bold; }
+.rules .score-red { color: var(--priority-high); font-weight: bold; }
+.rules .score-yellow { color: var(--priority-medium); font-weight: bold; }
+
+.points-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.total-points {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    background: #e8f8f1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+}
+
+.feedback {
+    margin-top: 10px;
+    font-weight: 500;
+    min-height: 20px;
+}
+.feedback.success { color: var(--secondary-color); }
+.feedback.error { color: var(--priority-high); }
+
+
+/* --- 模态框 --- */
+.modal-container {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+}
+.modal-content {
+    background-color: var(--background-color);
+    margin: 8% auto;
+    padding: 25px;
+    border: none;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    animation: slide-down 0.4s ease-out;
+}
+@keyframes slide-down {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.close-btn {
+    color: var(--text-color-light);
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-btn:hover { color: var(--text-color); }
+.modal-form label {
+    margin-top: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+.modal-form input, 
+.modal-form select, 
+.modal-form textarea {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 0.3rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-background);
+}
+.modal-form textarea { min-height: 100px; resize: vertical; }
+.modal-form button {
+    margin-top: 1.5rem;
+    padding: 0.9rem;
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* --- 响应式设计 --- */
+@media (max-width: 768px) {
+    body { font-size: 14px; }
+    header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+    nav {
+        margin-top: 1rem;
+        width: 100%;
+    }
+    nav button {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+        text-align: center;
+    }
+    main { padding: 1rem; }
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+        padding: 20px;
+    }
+}
