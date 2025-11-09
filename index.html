@@ -3,53 +3,749 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>安顺学院2025植物保护班级事务协同工作台</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>安顺学院XX班级事务协同工作台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .real-time-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .real-time-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 积分排行榜样式 */
+        .leaderboard-section {
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            color: white;
+            box-shadow: 0 8px 24px rgba(255, 183, 0, 0.3);
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-title {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leaderboard-refresh {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-refresh:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .leaderboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .leaderboard-item {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .leaderboard-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .rank-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #e8e8e8); color: #333; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #e4a853); color: white; }
+        .rank-other { background: rgba(255, 255, 255, 0.2); }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .leaderboard-role {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .leaderboard-points {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .points-change {
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        .points-up { color: #4caf50; }
+        .points-down { color: #f44336; }
+
+        /* 看板样式 */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .kanban-column {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 500px;
+        }
+
+        .column-header {
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .column-header.todo { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .column-header.progress { background: linear-gradient(135deg, #ffa726, #fb8c00); color: white; }
+        .column-header.done { background: linear-gradient(135deg, #66bb6a, #43a047); color: white; }
+        .column-header.cancelled { background: linear-gradient(135deg, #ef5350, #e53935); color: white; }
+
+        .task-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: move;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .task-points {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ffd700;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            padding-right: 50px;
+        }
+
+        .task-details {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .task-priority {
+            color: #ffa726;
+        }
+
+        .add-task-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .add-task-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f8f9ff;
+        }
+
+        /* 工作日志表格样式 */
+        .log-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .add-log-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .add-log-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .log-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .log-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .log-table th {
+            background: #f8f9fa;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .log-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        .log-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .drag-over {
+            background: #e8f5e9 !important;
+            border: 2px dashed #66bb6a !important;
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .notification.show {
+            display: flex;
+        }
+
+        .notification.success {
+            border-left: 4px solid #4caf50;
+        }
+
+        .notification.info {
+            border-left: 4px solid #2196f3;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+        }
+
+        .notification.success .notification-icon {
+            color: #4caf50;
+        }
+
+        .notification.info .notification-icon {
+            color: #2196f3;
+        }
+
+        @media (max-width: 1200px) {
+            .kanban-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+            
+            .log-table {
+                overflow-x: auto;
+            }
+
+            .leaderboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="main-container">
+        <header class="header">
+            <div class="real-time-indicator">
+                <div class="real-time-dot"></div>
+                <span>实时同步中</span>
+            </div>
+            <h1>安顺学院XX班级事务协同工作台</h1>
+            <p>实现任务「发布-执行-跟踪-归档」的全流程可视化管理</p>
+        </header>
 
-    <header>
-        <h1><i class="fa-solid fa-leaf"></i> 安顺学院2025植物保护班级事务协同工作台</h1>
-        <nav>
-            <button id="nav-kanban" class="active"><i class="fa-solid fa-chalkboard-user"></i> 班级事务看板</button>
-            <button id="nav-log"><i class="fa-solid fa-book"></i> 班委工作日志</button>
-            <button id="nav-settings"><i class="fa-solid fa-cogs"></i> 设置与积分管理</button>
-        </nav>
-    </header>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('kanban')">
+                📋 班级事务看板
+            </button>
+            <button class="tab" onclick="switchTab('log')">
+                📝 班委工作日志
+            </button>
+        </div>
 
-    <main>
-        <!-- 班级事务看板 -->
-        <section id="kanban-section" class="content-section active">
+        <!-- 看板视图 -->
+        <div id="kanban" class="tab-content active">
+            <!-- 积分排行榜 -->
+            <div class="leaderboard-section">
+                <div class="leaderboard-header">
+                    <div class="leaderboard-title">
+                        🏆 班级积分排行榜
+                    </div>
+                    <button class="leaderboard-refresh" onclick="refreshLeaderboard()">
+                        🔄 刷新
+                    </button>
+                </div>
+                <div class="leaderboard-grid" id="leaderboardGrid">
+                    <!-- 动态生成排行榜 -->
+                </div>
+            </div>
+
             <div class="kanban-board">
-                <div class="kanban-column" id="todo" ondragover="event.preventDefault()" ondrop="app.drop(event)">
-                    <h3><i class="fa-solid fa-list-check"></i> 待办 (To-Do)</h3>
-                    <div class="tasks" id="todo-tasks"></div>
-                    <button class="add-task-btn" onclick="app.openTaskModal()"><i class="fa-solid fa-plus"></i> 添加新任务</button>
+                <div class="kanban-column" data-status="todo">
+                    <div class="column-header todo">
+                        <span>待办 (To-Do)</span>
+                        <span class="column-count" id="todo-count">0</span>
+                    </div>
+                    <div class="tasks-container" id="todo-tasks">
+                        <div class="task-card" draggable="true" data-task-id="1" data-points="10">
+                            <div class="task-points">+10分</div>
+                            <div class="task-title">筹备"学风建设"主题班会</div>
+                            <div class="task-details">
+                                - 确定时间地点<br>
+                                - 准备PPT材料<br>
+                                - 邀请班主任讲话
+                            </div>
+                            <div class="task-meta">
+                                <span>负责人：班长 - 张三</span>
+                                <span class="task-priority">⭐高</span>
+                            </div>
+                            <div class="task-meta">
+                                <span>截止：2025-03-15</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="add-task-btn" onclick="openTaskModal('todo')">+ 添加新任务</button>
                 </div>
-                <div class="kanban-column" id="inprogress" ondragover="event.preventDefault()" ondrop="app.drop(event)">
-                    <h3><i class="fa-solid fa-person-running"></i> 进行中 (In Progress)</h3>
-                    <div class="tasks" id="inprogress-tasks"></div>
-                </div>
-                <div class="kanban-column" id="done" ondragover="event.preventDefault()" ondrop="app.drop(event)">
-                    <h3><i class="fa-solid fa-check-circle"></i> 已完成 (Done)</h3>
-                    <div class="tasks" id="done-tasks"></div>
-                </div>
-                <div class="kanban-column" id="cancelled" ondragover="event.preventDefault()" ondrop="app.drop(event)">
-                    <h3><i class="fa-solid fa-times-circle"></i> 已取消/搁置</h3>
-                    <div class="tasks" id="cancelled-tasks"></div>
-                </div>
-            </div>
-        </section>
 
-        <!-- 班委工作日志 -->
-        <section id="log-section" class="content-section">
-            <div class="section-header">
-                <h2><i class="fa-solid fa-book"></i> 班委工作日志</h2>
-                <button id="add-log-btn" class="add-btn"><i class="fa-solid fa-plus"></i> 添加日志记录</button>
+                <div class="kanban-column" data-status="progress">
+                    <div class="column-header progress">
+                        <span>进行中 (In Progress)</span>
+                        <span class="column-count" id="progress-count">0</span>
+                    </div>
+                    <div class="tasks-container" id="progress-tasks">
+                        <div class="task-card" draggable="true" data-task-id="2" data-points="15">
+                            <div class="task-points">+15分</div>
+                            <div class="task-title">收取本学期班费</div>
+                            <div class="task-details">
+                                - 已发布通知（附截图链接）<br>
+                                - 已收到35人转账<br>
+                                - 等待剩余5人
+                            </div>
+                            <div class="task-meta">
+                                <span>负责人：生活委员 - 李四</span>
+                                <span class="task-priority">⭐高</span>
+                            </div>
+                            <div class="task-meta">
+                                <span>截止：2025-03-10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kanban-column" data-status="done">
+                    <div class="column-header done">
+                        <span>已完成 (Done)</span>
+                        <span class="column-count" id="done-count">0</span>
+                    </div>
+                    <div class="tasks-container" id="done-tasks">
+                        <div class="task-card" draggable="true" data-task-id="3" data-points="20">
+                            <div class="task-points">+20分</div>
+                            <div class="task-title">组织新生篮球赛</div>
+                            <div class="task-details">
+                                - 已完成报名组队<br>
+                                - 赛程已公布<br>
+                                - 顺利结束，合影已发群相册
+                            </div>
+                            <div class="task-meta">
+                                <span>负责人：体育委员 - 王五</span>
+                            </div>
+                            <div class="task-meta">
+                                <span>完成：2025-03-08</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kanban-column" data-status="cancelled">
+                    <div class="column-header cancelled">
+                        <span>已取消/搁置</span>
+                        <span class="column-count" id="cancelled-count">0</span>
+                    </div>
+                    <div class="tasks-container" id="cancelled-tasks">
+                        <div class="task-card" draggable="true" data-task-id="4" data-points="0">
+                            <div class="task-points">0分</div>
+                            <div class="task-title">秋季校外研学活动</div>
+                            <div class="task-details">
+                                因天气原因及安全考虑，经讨论决定取消。连续阴雨，场地泥泞。
+                            </div>
+                            <div class="task-meta">
+                                <span>负责人：班长 - 张三</span>
+                            </div>
+                            <div class="task-meta">
+                                <span>更新：2025-03-05</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="table-container">
-                <table id="log-table">
+        </div>
+
+        <!-- 工作日志视图 -->
+        <div id="log" class="tab-content">
+            <div class="log-controls">
+                <h2>班委工作日志</h2>
+                <button class="add-log-btn" onclick="openLogModal()">+ 添加工作记录</button>
+            </div>
+            
+            <div class="log-table">
+                <table>
                     <thead>
                         <tr>
                             <th>日期</th>
@@ -59,81 +755,524 @@
                             <th>关键链接/截图</th>
                             <th>状态</th>
                             <th>备注</th>
-                            <th>操作</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody id="log-tbody">
+                        <tr>
+                            <td>2025-03-10</td>
+                            <td>学习委员</td>
+                            <td>学风建设</td>
+                            <td>转发教务处《补考安排通知》，并提醒相关同学。</td>
+                            <td><a href="#" style="color: #667eea;">通知截图</a></td>
+                            <td><span class="status-badge completed">已完成</span></td>
+                            <td>已单独私信2位同学。</td>
+                        </tr>
+                        <tr>
+                            <td>2025-03-10</td>
+                            <td>体育委员</td>
+                            <td>活动组织</td>
+                            <td>发布校运会报名预通知，收集参赛意向。</td>
+                            <td><a href="#" style="color: #667eea;">报名问卷</a></td>
+                            <td><span class="status-badge progress">进行中</span></td>
+                            <td>截止周三，已有15人填报。</td>
+                        </tr>
+                        <tr>
+                            <td>2025-03-09</td>
+                            <td>团支书</td>
+                            <td>团务工作</td>
+                            <td>提交本月主题团日活动策划案至学院团委。</td>
+                            <td><a href="#" style="color: #667eea;">策划案文档</a></td>
+                            <td><span class="status-badge completed">已完成</span></td>
+                            <td>等待学院批复。</td>
+                        </tr>
+                        <tr>
+                            <td>2025-03-08</td>
+                            <td>生活委员</td>
+                            <td>日常管理</td>
+                            <td>检查各宿舍卫生，并公示优秀宿舍名单。</td>
+                            <td><a href="#" style="color: #667eea;">检查结果照片</a></td>
+                            <td><span class="status-badge completed">已完成</span></td>
+                            <td>315宿舍需整改。</td>
+                        </tr>
+                        <tr>
+                            <td>2025-03-07</td>
+                            <td>班长</td>
+                            <td>通知传达</td>
+                            <td>通知全班周五下午召开班会，并收集时间冲突情况。</td>
+                            <td><a href="#" style="color: #667eea;">群接龙截图</a></td>
+                            <td><span class="status-badge completed">已完成</span></td>
+                            <td>2人请假，已准假。</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
-        </section>
-
-        <!-- 设置与积分管理 -->
-        <section id="settings-section" class="content-section">
-            <div id="password-gate">
-                 <h2><i class="fa-solid fa-lock"></i> 访问受限</h2>
-                 <p>此区域为班委专用，请输入密码访问。</p>
-                 <input type="password" id="password-input" placeholder="请输入密码">
-                 <button id="password-submit">进入</button>
-                 <p id="password-feedback" class="feedback"></p>
-            </div>
-
-            <div id="settings-content" style="display: none;">
-                <h2><i class="fa-solid fa-cogs"></i> 班委密码设置</h2>
-                <div class="settings-card">
-                    <input type="password" id="new-password" placeholder="设置新密码">
-                    <input type="password" id="confirm-password" placeholder="确认新密码">
-                    <button id="save-password-btn">保存密码</button>
-                    <p id="password-set-feedback" class="feedback"></p>
-                </div>
-
-                <h2><i class="fa-solid fa-scroll"></i> 积分规则说明</h2>
-                <div class="settings-card rules">
-                    <ul>
-                        <li><span class="score-green">+4分:</span> 主动报名并出色完成任务</li>
-                        <li><span class="score-green">+3分:</span> 积极响应号召并完成任务</li>
-                        <li><span class="score-blue">+2分:</span> 接受任务摊派并完成</li>
-                        <li><span class="score-red">扣分:</span> 根据具体情况，由班委讨论决定</li>
-                        <li><span class="score-yellow">特殊贡献:</span> 如有重大贡献，需两位以上班委确认后记录，并详细注明事由。</li>
-                    </ul>
-                </div>
-                
-                <div class="section-header">
-                    <h2><i class="fa-solid fa-star"></i> 班级积分记录</h2>
-                    <div class="points-header">
-                         <div class="total-points">
-                            班级当前总积分: <span id="total-points-display">0</span>
-                        </div>
-                        <button id="add-point-btn" class="add-btn"><i class="fa-solid fa-plus"></i> 添加积分记录</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table id="points-table">
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>姓名</th>
-                                <th>事项</th>
-                                <th>积分变动</th>
-                                <th>事由</th>
-                                <th>班委确认</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    </main>
-    
-    <!-- 全局模态框 -->
-    <div id="modal-container" class="modal-container">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <div id="modal-body"></div>
         </div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <!-- 任务模态框 -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加新任务</h2>
+            </div>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label>任务标题</label>
+                    <input type="text" id="taskTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>任务详情</label>
+                    <textarea id="taskDetails" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>负责人</label>
+                    <input type="text" id="taskOwner" required>
+                </div>
+                <div class="form-group">
+                    <label>截止日期</label>
+                    <input type="date" id="taskDeadline">
+                </div>
+                <div class="form-group">
+                    <label>优先级</label>
+                    <select id="taskPriority">
+                        <option value="low">低</option>
+                        <option value="medium">中</option>
+                        <option value="high">高</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>任务积分</label>
+                    <select id="taskPoints">
+                        <option value="5">5分</option>
+                        <option value="10">10分</option>
+                        <option value="15">15分</option>
+                        <option value="20">20分</option>
+                        <option value="30">30分</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">创建任务</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 工作日志模态框 -->
+    <div id="logModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加工作记录</h2>
+            </div>
+            <form id="logForm">
+                <div class="form-group">
+                    <label>日期</label>
+                    <input type="date" id="logDate" required>
+                </div>
+                <div class="form-group">
+                    <label>负责人</label>
+                    <input type="text" id="logOwner" required>
+                </div>
+                <div class="form-group">
+                    <label>事项类别</label>
+                    <select id="logCategory" required>
+                        <option value="">请选择</option>
+                        <option value="学风建设">学风建设</option>
+                        <option value="活动组织">活动组织</option>
+                        <option value="团务工作">团务工作</option>
+                        <option value="日常管理">日常管理</option>
+                        <option value="通知传达">通知传达</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>内容简述</label>
+                    <textarea id="logContent" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>关键链接/截图</label>
+                    <input type="url" id="logLink" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="logStatus" required>
+                        <option value="completed">已完成</option>
+                        <option value="progress">进行中</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="logNote"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeLogModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">添加记录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 通知组件 -->
+    <div id="notification" class="notification">
+        <span class="notification-icon"></span>
+        <span class="notification-text"></span>
+    </div>
+
+    <script>
+        // 数据存储
+        let taskData = {
+            todo: [],
+            progress: [],
+            done: [],
+            cancelled: []
+        };
+
+        let memberPoints = {
+            '张三': 45,
+            '李四': 30,
+            '王五': 50,
+            '赵六': 25,
+            '陈七': 35,
+            '刘八': 40
+        };
+
+        let taskIdCounter = 5;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDragAndDrop();
+            initializeForms();
+            setDefaultDates();
+            updateTaskCounts();
+            updateLeaderboard();
+            startRealTimeSync();
+        });
+
+        // 实时同步模拟
+        function startRealTimeSync() {
+            setInterval(() => {
+                // 模拟实时数据更新
+                const dot = document.querySelector('.real-time-dot');
+                dot.style.animation = 'none';
+                setTimeout(() => {
+                    dot.style.animation = 'pulse 2s infinite';
+                }, 100);
+            }, 5000);
+        }
+
+        // 标签页切换
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // 拖拽功能
+        let draggedElement = null;
+
+        function initializeDragAndDrop() {
+            document.addEventListener('dragstart', handleDragStart);
+            document.addEventListener('dragend', handleDragEnd);
+            
+            const columns = document.querySelectorAll('.tasks-container');
+            columns.forEach(column => {
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('drop', handleDrop);
+                column.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            if (e.target.classList.contains('task-card')) {
+                draggedElement = e.target;
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        }
+
+        function handleDragEnd(e) {
+            if (e.target.classList.contains('task-card')) {
+                e.target.classList.remove('dragging');
+            }
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            
+            const container = e.currentTarget;
+            if (container.classList.contains('tasks-container')) {
+                container.classList.add('drag-over');
+            }
+            
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            const container = e.currentTarget;
+            container.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            const container = e.currentTarget;
+            container.classList.remove('drag-over');
+            
+            if (draggedElement && container.classList.contains('tasks-container')) {
+                const oldStatus = draggedElement.parentElement.id.replace('-tasks', '');
+                const newStatus = container.id.replace('-tasks', '');
+                
+                if (oldStatus !== newStatus) {
+                    container.appendChild(draggedElement);
+                    
+                    // 更新积分
+                    if (newStatus === 'done' && oldStatus !== 'done') {
+                        const points = parseInt(draggedElement.dataset.points);
+                        const owner = draggedElement.querySelector('.task-meta span').textContent.replace('负责人：', '');
+                        updateMemberPoints(owner, points);
+                        showNotification(`任务完成！${owner} 获得 ${points} 积分`, 'success');
+                    }
+                    
+                    updateTaskCounts();
+                    updateLeaderboard();
+                }
+            }
+            
+            return false;
+        }
+
+        // 更新成员积分
+        function updateMemberPoints(memberName, points) {
+            if (!memberPoints[memberName]) {
+                memberPoints[memberName] = 0;
+            }
+            memberPoints[memberName] += points;
+            
+            // 保存到localStorage
+            localStorage.setItem('memberPoints', JSON.stringify(memberPoints));
+        }
+
+        // 更新任务计数
+        function updateTaskCounts() {
+            const statuses = ['todo', 'progress', 'done', 'cancelled'];
+            statuses.forEach(status => {
+                const count = document.querySelectorAll(`#${status}-tasks .task-card`).length;
+                document.getElementById(`${status}-count`).textContent = count;
+            });
+        }
+
+        // 更新排行榜
+        function updateLeaderboard() {
+            const leaderboardGrid = document.getElementById('leaderboardGrid');
+            const sortedMembers = Object.entries(memberPoints)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+            
+            leaderboardGrid.innerHTML = sortedMembers.map((member, index) => {
+                const rank = index + 1;
+                const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+                const role = getMemberRole(member[0]);
+                const pointsChange = Math.floor(Math.random() * 10) - 5; // 模拟积分变化
+                
+                return `
+                    <div class="leaderboard-item">
+                        <div class="rank-badge ${rankClass}">${rank}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${member[0]}</div>
+                            <div class="leaderboard-role">${role}</div>
+                        </div>
+                        <div>
+                            <div class="leaderboard-points">
+                                ${member[1]}
+                                <span class="points-change ${pointsChange >= 0 ? 'points-up' : 'points-down'}">
+                                    ${pointsChange >= 0 ? '+' : ''}${pointsChange}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getMemberRole(name) {
+            const roles = {
+                '张三': '班长',
+                '李四': '生活委员',
+                '王五': '体育委员',
+                '赵六': '学习委员',
+                '陈七': '团支书',
+                '刘八': '文艺委员'
+            };
+            return roles[name] || '班委';
+        }
+
+        function refreshLeaderboard() {
+            updateLeaderboard();
+            showNotification('排行榜已刷新', 'info');
+        }
+
+        // 模态框控制
+        function openTaskModal(status) {
+            document.getElementById('taskModal').classList.add('active');
+            document.getElementById('taskModal').dataset.status = status;
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            document.getElementById('taskForm').reset();
+        }
+
+        function openLogModal() {
+            document.getElementById('logModal').classList.add('active');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.remove('active');
+            document.getElementById('logForm').reset();
+        }
+
+        // 表单处理
+        function initializeForms() {
+            // 任务表单
+            document.getElementById('taskForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const title = document.getElementById('taskTitle').value;
+                const details = document.getElementById('taskDetails').value;
+                const owner = document.getElementById('taskOwner').value;
+                const deadline = document.getElementById('taskDeadline').value;
+                const priority = document.getElementById('taskPriority').value;
+                const points = document.getElementById('taskPoints').value;
+                const status = document.getElementById('taskModal').dataset.status;
+                
+                createTaskCard(title, details, owner, deadline, priority, points, status);
+                closeTaskModal();
+                showNotification('任务创建成功！', 'success');
+                updateTaskCounts();
+            });
+
+            // 日志表单
+            document.getElementById('logForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const date = document.getElementById('logDate').value;
+                const owner = document.getElementById('logOwner').value;
+                const category = document.getElementById('logCategory').value;
+                const content = document.getElementById('logContent').value;
+                const link = document.getElementById('logLink').value;
+                const status = document.getElementById('logStatus').value;
+                const note = document.getElementById('logNote').value;
+                
+                addLogRow(date, owner, category, content, link, status, note);
+                closeLogModal();
+                showNotification('工作记录添加成功！', 'success');
+                
+                // 添加日志也给予积分
+                if (status === 'completed') {
+                    updateMemberPoints(owner, 5);
+                    updateLeaderboard();
+                }
+            });
+        }
+
+        function createTaskCard(title, details, owner, deadline, priority, points, status) {
+            const taskId = taskIdCounter++;
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.draggable = true;
+            card.dataset.taskId = taskId;
+            card.dataset.points = points;
+            
+            const priorityStars = priority === 'high' ? '⭐高' : priority === 'medium' ? '⭐中' : '⭐低';
+            const deadlineText = deadline ? `<span>截止：${deadline}</span>` : '';
+            
+            card.innerHTML = `
+                <div class="task-points">+${points}分</div>
+                <div class="task-title">${title}</div>
+                <div class="task-details">${details.replace(/\n/g, '<br>')}</div>
+                <div class="task-meta">
+                    <span>负责人：${owner}</span>
+                    <span class="task-priority">${priorityStars}</span>
+                </div>
+                <div class="task-meta">
+                    ${deadlineText}
+                </div>
+            `;
+            
+            // 添加到对应列
+            const container = document.getElementById(`${status}-tasks`);
+            container.appendChild(card);
+        }
+
+        function addLogRow(date, owner, category, content, link, status, note) {
+            const tbody = document.getElementById('logtbody');
+            const row = document.createElement('tr');
+            
+            const statusClass = status === 'completed' ? 'completed' : 'progress';
+            const statusText = status === 'completed' ? '已完成' : '进行中';
+            const linkHtml = link ? `<a href="${link}" style="color: #667eea;" target="_blank">查看链接</a>` : '-';
+            
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${owner}</td>
+                <td>${category}</td>
+                <td>${content}</td>
+                <td>${linkHtml}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${note || '-'}</td>
+            `;
+            
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('logDate').value = today;
+            document.getElementById('taskDeadline').value = today;
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('.notification-icon');
+            const text = notification.querySelector('.notification-text');
+            
+            notification.className = `notification ${type} show`;
+            icon.textContent = type === 'success' ? '✓' : 'ℹ';
+            text.textContent = message;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // 从localStorage加载数据
+        function loadStoredData() {
+            const storedPoints = localStorage.getItem('memberPoints');
+            if (storedPoints) {
+                memberPoints = JSON.parse(storedPoints);
+            }
+        }
+
+        // 页面加载时恢复数据
+        loadStoredData();
+    </script>
 </body>
 </html>
