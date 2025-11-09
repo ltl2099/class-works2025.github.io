@@ -1,421 +1,146 @@
-/* --- 全局与主题 (丰富色彩扁平化设计) --- */
-:root {
-    --primary-color: #4a90e2;      /* 专业蓝 (Professional Blue) */
-    --accent-color: #2ecc71;       /* 活力绿 (Vibrant Green) */
-    --background-color: #f4f6f8;   /* 极浅灰蓝背景 */
-    --column-background: #eef1f4;  /* 看板列背景 */
-    --card-background: #FFFFFF;
-    --text-color: #34495e;         /* 深灰蓝 (Charcoal Blue) */
-    --text-color-light: #7f8c8d;   /* 浅灰 (Silver) */
-    --border-color: #ecf0f1;
-    --priority-high: #e74c3c;      /* 扁平红 (Alizarin) */
-    --priority-medium: #f1c40f;    /* 扁平黄 (Sun Flower) */
-    --priority-low: var(--primary-color); /* 用主色调表示低优先级 */
-    --shadow-lifted: 0 4px 15px rgba(0, 0, 0, 0.05); /* 更柔和的阴影 */
-}
-
-/* 基础样式重置 */
-*, *::before, *::after {
-    box-sizing: border-box;
-}
-
+/* style.css */
 body {
-    font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+    font-family: Arial, sans-serif;
+    background-color: #f0f8f0; /* Light green background */
+    color: #333;
     margin: 0;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    padding: 0;
 }
 
-/* --- 头部与导航 --- */
 header {
-    background-color: var(--card-background);
-    color: var(--text-color);
-    padding: 1rem 2.5rem;
+    background-color: #228b22; /* Forest green */
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+nav {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-color);
-    flex-wrap: wrap;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-header h1 .fa-leaf {
-    margin-right: 12px;
-    color: var(--accent-color);
+    justify-content: center;
+    gap: 10px;
 }
 
 nav button {
-    background: none;
+    background-color: #90ee90; /* Light green */
     border: none;
-    color: var(--text-color-light);
-    padding: 0.6rem 1.2rem;
-    margin: 0 5px;
+    padding: 8px 16px;
     cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 nav button:hover {
-    color: var(--primary-color);
+    background-color: #32cd32; /* Lime green */
 }
 
-nav button.active {
-    background-color: #e4f0fe; /* 淡淡的蓝色背景 */
-    color: var(--primary-color);
-}
-nav button .fa-solid {
-    margin-right: 8px;
-}
-
-/* --- 内容区域 --- */
 main {
-    padding: 2.5rem;
+    padding: 20px;
 }
 
-.content-section { display: none; }
-.content-section.active { display: block; }
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-}
-.section-header h2 {
-    margin: 0;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--text-color);
+.section {
+    margin-bottom: 20px;
 }
 
-/* --- 看板 (Kanban Board) - 焕新设计 --- */
+.hidden {
+    display: none;
+}
+
+/* Kanban Board */
 .kanban-board {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.kanban-column {
-    background-color: var(--column-background);
-    border-radius: 12px;
     display: flex;
-    flex-direction: column;
+    gap: 10px;
+    overflow-x: auto;
 }
 
-.kanban-column h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin: 0;
-    padding: 1.2rem 1.5rem;
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-}
-
-.kanban-column h3 .fa-solid {
-    margin-right: 10px;
-    color: var(--text-color-light);
+.column {
+    background-color: #98fb98; /* Pale green */
+    border: 1px solid #228b22;
+    border-radius: 5px;
+    padding: 10px;
+    width: 25%;
+    min-width: 200px;
 }
 
 .tasks {
-    flex-grow: 1;
-    padding: 0.5rem 1rem 1.5rem 1rem;
-    min-height: 65vh;
+    min-height: 100px;
 }
 
 .task-card {
-    background-color: var(--card-background);
-    padding: 1.2rem;
-    border-radius: 8px;
-    margin-top: 1rem;
-    box-shadow: var(--shadow-lifted);
-    border-left: 5px solid;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-.task-card .task-content { cursor: pointer; }
-
-.task-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: grab;
 }
 
-/* 优先级颜色 */
-.task-card.priority-high { border-left-color: var(--priority-high); }
-.task-card.priority-medium { border-left-color: var(--priority-medium); }
-.task-card.priority-low { border-left-color: var(--priority-low); }
+.task-card.high { border-left: 5px solid red; }
+.task-card.medium { border-left: 5px solid orange; }
+.task-card.low { border-left: 5px solid green; }
 
-/* 卡片内文字排版 */
-.task-card p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--text-color-light);
-}
-.task-card p:not(:last-child) {
-    margin-bottom: 0.6rem;
-}
-.task-card p strong {
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--text-color);
-    display: block;
-    margin-bottom: 0.3rem;
-}
-
-/* 联动按钮样式 */
-.task-actions {
-    margin-top: 1rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 10px;
-}
-.link-btn {
-    background-color: var(--background-color);
-    color: var(--text-color-light);
-    border: none;
-    border-radius: 6px;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.link-btn .fa-solid { margin-right: 6px; }
-.link-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-/* 优化 "添加新任务" 按钮 */
-.add-task-btn {
-    width: 100%;
-    margin: 1.5rem auto 0;
-    padding: 0.8rem;
-    background-color: transparent;
-    color: var(--text-color-light);
-    border: 2px dashed #dbe1e6;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    text-align: center;
-    transition: all 0.2s ease;
-}
-.add-task-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-
-/* --- 表格通用样式 --- */
-.table-container {
-    overflow-x: auto;
-    background-color: var(--card-background);
-    padding: 1.5rem;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-}
+/* Tables */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
+
 th, td {
-    padding: 1rem 1.2rem;
+    border: 1px solid #228b22;
+    padding: 8px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
-    white-space: nowrap;
 }
-td:nth-child(4), td:nth-child(5) { /* 内容和事由列可以换行 */
-    white-space: normal;
-}
+
 th {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.75px;
-}
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover {
-    background-color: #f7faff;
-}
-.action-btn {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    margin: 0 6px;
-    color: var(--text-color-light);
-    transition: color 0.2s ease;
-    vertical-align: middle;
-}
-.edit-btn:hover { color: var(--primary-color); }
-.delete-btn:hover { color: var(--priority-high); }
-.link-points-btn:hover { color: var(--priority-medium); }
-
-
-.add-btn {
-    background: linear-gradient(45deg, var(--primary-color), #63a4ff);
-    color: white;
-    padding: 0.7rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-    transition: all 0.2s ease;
-}
-.add-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+    background-color: #90ee90;
 }
 
-/* --- 设置与积分 --- */
-#settings-section h2 {
-    color: var(--text-color);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.8rem;
-    margin-top: 2.5rem;
-    font-size: 1.8rem;
-    font-weight: 600;
-}
-.settings-card {
-    background: var(--card-background);
-    padding: 2rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--border-color);
-}
-.points-header {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-.total-points {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    background: #e4f0fe;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-}
-
-/* --- 模态框 --- */
-.modal-container {
+/* Modals */
+.modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 1;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(52, 73, 94, 0.6);
-    backdrop-filter: blur(5px);
+    background-color: rgba(0,0,0,0.4);
 }
+
 .modal-content {
-    background-color: var(--background-color);
-    margin: 7% auto;
-    padding: 30px;
-    border: none;
-    width: 90%;
-    max-width: 650px;
-    border-radius: 16px;
-    position: relative;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-    animation: slide-down 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-@keyframes slide-down {
-    from { transform: translateY(-40px) scale(0.98); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
-}
-.close-btn {
-    color: var(--text-color-light);
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    font-size: 32px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-.close-btn:hover { color: var(--text-color); transform: rotate(90deg); }
-
-.modal-form h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.6rem;
-}
-.modal-form label {
-    margin-top: 1.2rem;
-    display: block;
-    font-weight: 600;
-    color: var(--text-color);
-    font-size: 0.9rem;
-}
-.modal-form input, 
-.modal-form select, 
-.modal-form textarea {
-    width: 100%;
-    padding: 0.9rem;
-    margin-top: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--card-background);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.modal-form input:focus,
-.modal-form select:focus,
-.modal-form textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
-}
-.modal-form textarea { min-height: 120px; resize: vertical; }
-.modal-form button[type="submit"] {
-    margin-top: 2rem;
-    padding: 1rem;
-    width: 100%;
-    font-size: 1.1rem;
-    font-weight: 500;
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
 }
 
-/* --- 响应式设计 --- */
+.modal-content input, .modal-content textarea, .modal-content select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+}
+
+.modal-content button {
+    margin-right: 10px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    body { font-size: 14px; }
-    header {
+    .kanban-board {
         flex-direction: column;
-        text-align: center;
-        padding: 1.5rem 1rem;
     }
+
+    .column {
+        width: 100%;
+    }
+
     nav {
-        margin-top: 1rem;
-        width: 100%;
+        flex-direction: column;
     }
-    nav button {
-        display: block;
-        width: 100%;
-        margin: 5px 0;
-        text-align: center;
-    }
-    main { padding: 1.5rem 1rem; }
-    .section-header h2 { font-size: 1.5rem; }
-    .modal-content {
-        width: 95%;
-        margin: 5% auto;
-        padding: 25px;
-    }
+}
+
+/* Feedback */
+.feedback {
+    color: red;
 }
