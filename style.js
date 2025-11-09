@@ -1,468 +1,476 @@
+// script.js
+const STORAGE_KEYS = {
+    TASKS: 'tasks',
+    LOGS: 'logs',
+    POINTS: 'points',
+    PASSWORD: 'password'
+};
+
+let tasks = loadData(STORAGE_KEYS.TASKS) || [];
+let logs = loadData(STORAGE_KEYS.LOGS) || [];
+let points = loadData(STORAGE_KEYS.POINTS) || [];
+let password = localStorage.getItem(STORAGE_KEYS.PASSWORD);
+let isLoggedIn = false;
+let currentTaskId = null;
+let currentLogId = null;
+let currentPointId = null;
+
+function loadData(key) {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+}
+
+function saveData(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+
+// Login and Password Management
 document.addEventListener('DOMContentLoaded', () => {
-    // 全局变量和状态
-    const state = {
-        tasks: JSON.parse(localStorage.getItem('tasks')) || [],
-        logs: JSON.parse(localStorage.getItem('logs')) || [],
-        points: JSON.parse(localStorage.getItem('points')) || [],
-        password: localStorage.getItem('password') || null,
-        currentEditingId: null,
-    };
+    if (!password) {
+        showModal('set-password-modal');
+    } else {
+        showModal('login-modal');
+    }
 
-    // DOM 元素选择器
-    const DOMElements = {
-        nav: {
-            kanban: document.getElementById('nav-kanban'),
-            log: document.getElementById('nav-log'),
-            settings: document.getElementById('nav-settings'),
-        },
-        sections: {
-            kanban: document.getElementById('kanban-section'),
-            log: document.getElementById('log-section'),
-            settings: document.getElementById('settings-section'),
-        },
-        kanban: {
-            columns: document.querySelectorAll('.kanban-column'),
-            addTaskBtns: document.querySelectorAll('.add-task-btn'),
-        },
-        log: {
-            addBtn: document.getElementById('add-log-btn'),
-            tableBody: document.querySelector('#log-table tbody'),
-        },
-        settings: {
-            passwordGate: document.getElementById('password-gate'),
-            passwordInput: document.getElementById('password-input'),
-            passwordSubmit: document.getElementById('password-submit'),
-            passwordFeedback: document.getElementById('password-feedback'),
-            settingsContent: document.getElementById('settings-content'),
-            newPassword: document.getElementById('new-password'),
-            confirmPassword: document.getElementById('confirm-password'),
-            savePasswordBtn: document.getElementById('save-password-btn'),
-            passwordSetFeedback: document.getElementById('password-set-feedback'),
-            addPointBtn: document.getElementById('add-point-btn'),
-            pointsTableBody: document.querySelector('#points-table tbody'),
-            totalPointsDisplay: document.getElementById('total-points-display'),
-        },
-        modal: {
-            container: document.getElementById('modal-container'),
-            body: document.getElementById('modal-body'),
-            closeBtn: document.querySelector('.close-btn'),
-        }
-    };
+    // Event Listeners
+    document.getElementById('set-password-submit').addEventListener('click', setInitialPassword);
+    document.getElementById('login-submit').addEventListener('click', login);
+    document.getElementById('save-password').addEventListener('click', changePassword);
+    document.getElementById('logout').addEventListener('click', logout);
 
-    // --- 数据持久化 ---
-    const saveData = (key, data) => {
-        localStorage.setItem(key, JSON.stringify(data));
-    };
+    // Navigation
+    document.getElementById('nav-kanban').addEventListener('click', () => showSection('kanban-section'));
+    document.getElementById('nav-log').addEventListener('click', () => showSection('log-section'));
+    document.getElementById('nav-settings').addEventListener('click', () => showSection('settings-section'));
 
-    const savePassword = (password) => {
-        localStorage.setItem('password', password);
-        state.password = password;
-    };
+    // Kanban
+    document.getElementById('add-task').addEventListener('click', openAddTaskModal);
+    document.getElementById('save-task').addEventListener('click', saveTask);
+    document.getElementById('close-task-modal').addEventListener('click', () => closeModal('task-modal'));
 
-    // --- 渲染函数 ---
-    const renderTasks = () => {
-        // 清空看板
-        document.querySelectorAll('.tasks').forEach(col => col.innerHTML = '');
-        
-        state.tasks.forEach(task => {
-            const taskCard = document.createElement('div');
-            taskCard.className = `task-card priority-${task.priority}`;
-            taskCard.id = task.id;
-            taskCard.draggable = true;
-            taskCard.innerHTML = `
-                <p><strong>${task.title}</strong></p>
-                <p>负责人: ${task.assignee}</p>
-                <p>截止日期: ${task.dueDate}</p>
-            `;
-            taskCard.addEventListener('dragstart', dragStart);
-            taskCard.addEventListener('click', () => openTaskModal(task.id));
-            document.getElementById(`${task.status}-tasks`).appendChild(taskCard);
-        });
-    };
+    // Log
+    document.getElementById('add-log').addEventListener('click', openAddLogModal);
+    document.getElementById('save-log').addEventListener('click', saveLog);
+    document.getElementById('close-log-modal').addEventListener('click', () => closeModal('log-modal'));
 
-    const renderLogs = () => {
-        DOMElements.log.tableBody.innerHTML = '';
-        state.logs.forEach(log => {
-            const row = DOMElements.log.tableBody.insertRow();
-            row.innerHTML = `
-                <td>${log.date}</td>
-                <td>${log.assignee}</td>
-                <td>${log.category}</td>
-                <td>${log.description}</td>
-                <td><a href="${log.link}" target="_blank">查看</a></td>
-                <td>${log.status}</td>
-                <td>${log.notes}</td>
-                <td>
-                    <button class="action-btn edit-btn" onclick="app.openLogModal('${log.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="action-btn delete-btn" onclick="app.deleteLog('${log.id}')"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-        });
-    };
-    
-    const renderPoints = () => {
-        DOMElements.settings.pointsTableBody.innerHTML = '';
-        let totalPoints = 0;
-        state.points.forEach(point => {
-            const row = DOMElements.settings.pointsTableBody.insertRow();
-            row.innerHTML = `
-                <td>${point.date}</td>
-                <td>${point.name}</td>
-                <td>${point.event}</td>
-                <td>${point.change > 0 ? '+' : ''}${point.change}</td>
-                <td>${point.reason}</td>
-                <td>${point.confirmedBy}</td>
-                <td>
-                    <button class="action-btn edit-btn" onclick="app.openPointModal('${point.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="action-btn delete-btn" onclick="app.deletePoint('${point.id}')"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            `;
-            totalPoints += parseInt(point.change);
-        });
-        DOMElements.settings.totalPointsDisplay.textContent = totalPoints;
-    };
-
-    // --- 导航/视图切换 ---
-    const switchView = (targetId) => {
-        Object.values(DOMElements.sections).forEach(section => section.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
-        
-        document.getElementById(targetId).classList.add('active');
-        document.querySelector(`nav button[id="nav-${targetId.split('-')[0]}"]`).classList.add('active');
-
-        if (targetId === 'settings-section' && state.password) {
-            DOMElements.settings.passwordGate.style.display = 'block';
-            DOMElements.settings.settingsContent.style.display = 'none';
-        } else if (targetId === 'settings-section' && !state.password) {
-            DOMElements.settings.passwordGate.style.display = 'none';
-            DOMElements.settings.settingsContent.style.display = 'block';
-        }
-    };
-
-    // --- 模态框逻辑 ---
-    const openModal = (content) => {
-        DOMElements.modal.body.innerHTML = content;
-        DOMElements.modal.container.style.display = 'block';
-    };
-
-    const closeModal = () => {
-        DOMElements.modal.container.style.display = 'none';
-        DOMElements.modal.body.innerHTML = '';
-        state.currentEditingId = null;
-    };
-
-    // --- 任务看板功能 ---
-    const dragStart = (e) => {
-        e.dataTransfer.setData('text/plain', e.target.id);
-    };
-
-    window.drop = (e) => {
-        e.preventDefault();
-        const taskId = e.dataTransfer.getData('text/plain');
-        const newStatus = e.target.closest('.kanban-column').id;
-        const task = state.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.status = newStatus;
-            saveData('tasks', state.tasks);
-            renderTasks();
-        }
-    };
-
-    const openTaskModal = (id = null) => {
-        state.currentEditingId = id;
-        const task = state.tasks.find(t => t.id === id) || {};
-        const isCancelled = task.status === 'cancelled';
-        const modalContent = `
-            <form id="task-form" class="modal-form">
-                <h2>${id ? '编辑任务' : '添加新任务'}</h2>
-                <label for="title">任务标题</label>
-                <input type="text" id="title" value="${task.title || ''}" required>
-                
-                <label for="description">详情描述</label>
-                <textarea id="description">${task.description || ''}</textarea>
-                
-                <label for="assignee">负责人</label>
-                <input type="text" id="assignee" value="${task.assignee || ''}" required>
-                
-                <label for="dueDate">截止日期</label>
-                <input type="date" id="dueDate" value="${task.dueDate || ''}" required>
-                
-                <label for="priority">优先级</label>
-                <select id="priority">
-                    <option value="low" ${task.priority === 'low' ? 'selected' : ''}>低</option>
-                    <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>中</option>
-                    <option value="high" ${task.priority === 'high' ? 'selected' : ''}>高</option>
-                </select>
-
-                <label for="status">状态</label>
-                <select id="status">
-                    <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>待办</option>
-                    <option value="inprogress" ${task.status === 'inprogress' ? 'selected' : ''}>进行中</option>
-                    <option value="done" ${task.status === 'done' ? 'selected' : ''}>已完成</option>
-                    <option value="cancelled" ${task.status === 'cancelled' ? 'selected' : ''}>已取消/搁置</option>
-                </select>
-
-                <div id="cancel-reason-container" style="display:${isCancelled ? 'block' : 'none'}">
-                    <label for="cancelReason">取消/搁置原因</label>
-                    <textarea id="cancelReason">${task.cancelReason || ''}</textarea>
-                </div>
-                
-                <label for="attachments">关联资料/图片链接</label>
-                <input type="text" id="attachments" value="${task.attachments || ''}">
-                
-                <button type="submit">保存</button>
-                ${id ? `<button type="button" class="delete-btn" onclick="app.deleteTask('${id}')" style="background-color: #e57373; margin-top: 10px;">删除任务</button>` : ''}
-            </form>
-        `;
-        openModal(modalContent);
-
-        // 显示/隐藏取消原因的逻辑
-        document.getElementById('status').addEventListener('change', (e) => {
-            document.getElementById('cancel-reason-container').style.display = e.target.value === 'cancelled' ? 'block' : 'none';
-        });
-    };
-    
-    const handleTaskFormSubmit = (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const taskData = {
-            id: state.currentEditingId || `task-${Date.now()}`,
-            title: form.querySelector('#title').value,
-            description: form.querySelector('#description').value,
-            assignee: form.querySelector('#assignee').value,
-            dueDate: form.querySelector('#dueDate').value,
-            priority: form.querySelector('#priority').value,
-            status: form.querySelector('#status').value,
-            cancelReason: form.querySelector('#cancelReason').value,
-            attachments: form.querySelector('#attachments').value,
-        };
-
-        if (state.currentEditingId) {
-            const index = state.tasks.findIndex(t => t.id === state.currentEditingId);
-            state.tasks[index] = taskData;
-        } else {
-            state.tasks.push(taskData);
-        }
-        
-        saveData('tasks', state.tasks);
-        renderTasks();
-        closeModal();
-    };
-
-    const deleteTask = (id) => {
-        if (confirm('确定要删除此任务吗？')) {
-            state.tasks = state.tasks.filter(t => t.id !== id);
-            saveData('tasks', state.tasks);
-            renderTasks();
-            closeModal();
-        }
-    };
-    
-    // --- 日志功能 ---
-    const openLogModal = (id = null) => {
-        state.currentEditingId = id;
-        const log = state.logs.find(l => l.id === id) || {};
-        const modalContent = `
-            <form id="log-form" class="modal-form">
-                <h2>${id ? '编辑日志' : '添加日志'}</h2>
-                <label for="log-date">日期</label>
-                <input type="date" id="log-date" value="${log.date || new Date().toISOString().slice(0, 10)}" required>
-                <label for="log-assignee">负责人</label>
-                <input type="text" id="log-assignee" value="${log.assignee || ''}" required>
-                <label for="log-category">事项类别</label>
-                <input type="text" id="log-category" value="${log.category || ''}" required>
-                <label for="log-description">内容简述</label>
-                <textarea id="log-description" required>${log.description || ''}</textarea>
-                <label for="log-link">关键链接/截图</label>
-                <input type="url" id="log-link" value="${log.link || ''}">
-                <label for="log-status">状态</label>
-                <input type="text" id="log-status" value="${log.status || ''}">
-                <label for="log-notes">备注</label>
-                <textarea id="log-notes">${log.notes || ''}</textarea>
-                <button type="submit">保存</button>
-            </form>
-        `;
-        openModal(modalContent);
-    };
-
-    const handleLogFormSubmit = (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const logData = {
-            id: state.currentEditingId || `log-${Date.now()}`,
-            date: form.querySelector('#log-date').value,
-            assignee: form.querySelector('#log-assignee').value,
-            category: form.querySelector('#log-category').value,
-            description: form.querySelector('#log-description').value,
-            link: form.querySelector('#log-link').value,
-            status: form.querySelector('#log-status').value,
-            notes: form.querySelector('#log-notes').value,
-        };
-
-        if (state.currentEditingId) {
-            const index = state.logs.findIndex(l => l.id === state.currentEditingId);
-            state.logs[index] = logData;
-        } else {
-            state.logs.push(logData);
-        }
-        
-        saveData('logs', state.logs);
-        renderLogs();
-        closeModal();
-    };
-
-    const deleteLog = (id) => {
-        if (confirm('确定要删除此条日志吗？')) {
-            state.logs = state.logs.filter(l => l.id !== id);
-            saveData('logs', state.logs);
-            renderLogs();
-        }
-    };
-    
-    // --- 积分与设置功能 ---
-    const handlePasswordSubmit = () => {
-        const input = DOMElements.settings.passwordInput.value;
-        if (input === state.password) {
-            DOMElements.settings.passwordGate.style.display = 'none';
-            DOMElements.settings.settingsContent.style.display = 'block';
-            DOMElements.settings.passwordFeedback.textContent = '';
-        } else {
-            DOMElements.settings.passwordFeedback.textContent = '密码错误，请重试。';
-            DOMElements.settings.passwordFeedback.className = 'feedback error';
-        }
-    };
-
-    const handleSavePassword = () => {
-        const newPass = DOMElements.settings.newPassword.value;
-        const confirmPass = DOMElements.settings.confirmPassword.value;
-        const feedbackEl = DOMElements.settings.passwordSetFeedback;
-
-        if (!newPass || !confirmPass) {
-            feedbackEl.textContent = '密码不能为空！';
-            feedbackEl.className = 'feedback error';
-            return;
-        }
-        if (newPass !== confirmPass) {
-            feedbackEl.textContent = '两次输入的密码不一致！';
-            feedbackEl.className = 'feedback error';
-            return;
-        }
-        savePassword(newPass);
-        feedbackEl.textContent = '密码设置成功！';
-        feedbackEl.className = 'feedback success';
-        DOMElements.settings.newPassword.value = '';
-        DOMElements.settings.confirmPassword.value = '';
-    };
-
-    const openPointModal = (id = null) => {
-        state.currentEditingId = id;
-        const point = state.points.find(p => p.id === id) || {};
-        const modalContent = `
-            <form id="point-form" class="modal-form">
-                <h2>${id ? '编辑积分' : '添加积分'}</h2>
-                <label for="point-date">日期</label>
-                <input type="date" id="point-date" value="${point.date || new Date().toISOString().slice(0, 10)}" required>
-                <label for="point-name">姓名</label>
-                <input type="text" id="point-name" value="${point.name || ''}" required>
-                <label for="point-event">事项</label>
-                <input type="text" id="point-event" value="${point.event || ''}" required>
-                <label for="point-change">积分变动 (如: 4, -2)</label>
-                <input type="number" id="point-change" value="${point.change || ''}" required>
-                <label for="point-reason">事由</label>
-                <textarea id="point-reason" required>${point.reason || ''}</textarea>
-                <label for="point-confirmedBy">班委确认</label>
-                <input type="text" id="point-confirmedBy" value="${point.confirmedBy || ''}" required>
-                <button type="submit">保存</button>
-            </form>
-        `;
-        openModal(modalContent);
-    };
-
-    const handlePointFormSubmit = (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const pointData = {
-            id: state.currentEditingId || `point-${Date.now()}`,
-            date: form.querySelector('#point-date').value,
-            name: form.querySelector('#point-name').value,
-            event: form.querySelector('#point-event').value,
-            change: form.querySelector('#point-change').value,
-            reason: form.querySelector('#point-reason').value,
-            confirmedBy: form.querySelector('#point-confirmedBy').value,
-        };
-        
-        if (state.currentEditingId) {
-            const index = state.points.findIndex(p => p.id === state.currentEditingId);
-            state.points[index] = pointData;
-        } else {
-            state.points.push(pointData);
-        }
-
-        saveData('points', state.points);
-        renderPoints();
-        closeModal();
-    };
-    
-    const deletePoint = (id) => {
-        if (confirm('确定要删除此条积分记录吗？')) {
-            state.points = state.points.filter(p => p.id !== id);
-            saveData('points', state.points);
-            renderPoints();
-        }
-    };
-    
-    // --- 事件监听器绑定 ---
-    const bindEventListeners = () => {
-        // 导航
-        DOMElements.nav.kanban.addEventListener('click', () => switchView('kanban-section'));
-        DOMElements.nav.log.addEventListener('click', () => switchView('log-section'));
-        DOMElements.nav.settings.addEventListener('click', () => switchView('settings-section'));
-
-        // 模态框
-        DOMElements.modal.closeBtn.addEventListener('click', closeModal);
-        window.addEventListener('click', (e) => {
-            if (e.target === DOMElements.modal.container) closeModal();
-        });
-        DOMElements.modal.container.addEventListener('submit', (e) => {
-            if (e.target.id === 'task-form') handleTaskFormSubmit(e);
-            if (e.target.id === 'log-form') handleLogFormSubmit(e);
-            if (e.target.id === 'point-form') handlePointFormSubmit(e);
-        });
-
-        // 看板
-        DOMElements.kanban.addTaskBtns.forEach(btn => btn.addEventListener('click', () => openTaskModal()));
-
-        // 日志
-        DOMElements.log.addBtn.addEventListener('click', () => openLogModal());
-        
-        // 设置与积分
-        DOMElements.settings.passwordSubmit.addEventListener('click', handlePasswordSubmit);
-        DOMElements.settings.savePasswordBtn.addEventListener('click', handleSavePassword);
-        DOMElements.settings.addPointBtn.addEventListener('click', () => openPointModal());
-    };
-    
-    // --- 初始化 ---
-    const init = () => {
-        bindEventListeners();
-        renderTasks();
-        renderLogs();
-        renderPoints();
-
-        // 暴露给HTML内联调用的方法
-        window.app = {
-            openLogModal,
-            deleteLog,
-            openPointModal,
-            deletePoint,
-            deleteTask
-        };
-        
-        // 密码提示
-        if (!state.password) {
-            const originalText = DOMElements.nav.settings.innerHTML;
-            DOMElements.nav.settings.innerHTML += ' <span style="color: #ffd54f; font-size: 0.8em;">(请先设置密码)</span>';
-        }
-    };
-
-    init();
+    // Points
+    document.getElementById('add-point').addEventListener('click', openAddPointModal);
+    document.getElementById('save-point').addEventListener('click', savePoint);
+    document.getElementById('close-point-modal').addEventListener('click', () => closeModal('point-modal'));
 });
+
+function showSection(sectionId) {
+    if (!isLoggedIn) return;
+    document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
+    document.getElementById(sectionId).classList.remove('hidden');
+    if (sectionId === 'kanban-section') renderKanban();
+    if (sectionId === 'log-section') renderLogs();
+    if (sectionId === 'settings-section') renderPoints();
+}
+
+function showModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function setInitialPassword() {
+    const newPass = document.getElementById('set-new-password').value;
+    const confirmPass = document.getElementById('set-confirm-password').value;
+    const feedback = document.getElementById('set-password-feedback');
+    if (newPass !== confirmPass || !newPass) {
+        feedback.textContent = '密码不匹配或为空';
+        return;
+    }
+    localStorage.setItem(STORAGE_KEYS.PASSWORD, newPass);
+    password = newPass;
+    closeModal('set-password-modal');
+    showModal('login-modal');
+    feedback.textContent = '';
+}
+
+function login() {
+    const inputPass = document.getElementById('login-password').value;
+    const feedback = document.getElementById('login-feedback');
+    if (inputPass === password) {
+        isLoggedIn = true;
+        closeModal('login-modal');
+        showSection('kanban-section');
+        document.querySelector('header').style.display = 'block';
+        document.querySelector('main').style.display = 'block';
+        feedback.textContent = '';
+    } else {
+        feedback.textContent = '密码错误';
+    }
+}
+
+function changePassword() {
+    const newPass = document.getElementById('new-password').value;
+    const confirmPass = document.getElementById('confirm-password').value;
+    const feedback = document.getElementById('password-feedback');
+    if (newPass !== confirmPass || !newPass) {
+        feedback.textContent = '密码不匹配或为空';
+        return;
+    }
+    localStorage.setItem(STORAGE_KEYS.PASSWORD, newPass);
+    password = newPass;
+    feedback.textContent = '密码更新成功';
+}
+
+function logout() {
+    isLoggedIn = false;
+    document.querySelector('header').style.display = 'none';
+    document.querySelector('main').style.display = 'none';
+    showModal('login-modal');
+}
+
+// Kanban Functions
+function renderKanban() {
+    const columns = ['to-do', 'in-progress', 'done', 'cancelled'];
+    columns.forEach(col => {
+        const tasksDiv = document.getElementById(col).querySelector('.tasks');
+        tasksDiv.innerHTML = '';
+        tasks.filter(task => task.status === col).forEach(task => {
+            const card = document.createElement('div');
+            card.classList.add('task-card', task.priority);
+            card.draggable = true;
+            card.dataset.id = task.id;
+            card.innerHTML = `
+                <h4>${task.title}</h4>
+                <p>负责人: ${task.assignee}</p>
+                <p>截止: ${task.dueDate}</p>
+                <p>优先级: ${task.priority}</p>
+                <button class="edit-task">编辑</button>
+                <button class="delete-task">删除</button>
+            `;
+            card.querySelector('.edit-task').addEventListener('click', () => openEditTaskModal(task.id));
+            card.querySelector('.delete-task').addEventListener('click', () => deleteTask(task.id));
+            card.addEventListener('dragstart', dragStart);
+            tasksDiv.appendChild(card);
+        });
+    });
+
+    document.querySelectorAll('.column').forEach(column => {
+        column.addEventListener('dragover', dragOver);
+        column.addEventListener('drop', drop);
+    });
+}
+
+function openAddTaskModal() {
+    currentTaskId = null;
+    document.getElementById('task-modal-title').textContent = '添加新任务';
+    clearTaskModal();
+    document.getElementById('task-status').value = 'to-do';
+    document.getElementById('task-reason').classList.add('hidden');
+    showModal('task-modal');
+}
+
+function openEditTaskModal(id) {
+    const task = tasks.find(t => t.id === id);
+    currentTaskId = id;
+    document.getElementById('task-modal-title').textContent = '编辑任务';
+    document.getElementById('task-title').value = task.title;
+    document.getElementById('task-description').value = task.description;
+    document.getElementById('task-assignee').value = task.assignee;
+    document.getElementById('task-due-date').value = task.dueDate;
+    document.getElementById('task-priority').value = task.priority;
+    document.getElementById('task-status').value = task.status;
+    document.getElementById('task-links').value = task.links || '';
+    if (task.status === 'cancelled') {
+        document.getElementById('task-reason').value = task.reason || '';
+        document.getElementById('task-reason').classList.remove('hidden');
+    } else {
+        document.getElementById('task-reason').classList.add('hidden');
+    }
+    showModal('task-modal');
+
+    document.getElementById('task-status').addEventListener('change', (e) => {
+        if (e.target.value === 'cancelled') {
+            document.getElementById('task-reason').classList.remove('hidden');
+        } else {
+            document.getElementById('task-reason').classList.add('hidden');
+        }
+    });
+}
+
+function clearTaskModal() {
+    document.getElementById('task-title').value = '';
+    document.getElementById('task-description').value = '';
+    document.getElementById('task-assignee').value = '';
+    document.getElementById('task-due-date').value = '';
+    document.getElementById('task-priority').value = 'medium';
+    document.getElementById('task-status').value = 'to-do';
+    document.getElementById('task-reason').value = '';
+    document.getElementById('task-links').value = '';
+    document.getElementById('task-feedback').textContent = '';
+}
+
+function saveTask() {
+    const title = document.getElementById('task-title').value;
+    const description = document.getElementById('task-description').value;
+    const assignee = document.getElementById('task-assignee').value;
+    const dueDate = document.getElementById('task-due-date').value;
+    const priority = document.getElementById('task-priority').value;
+    const status = document.getElementById('task-status').value;
+    const reason = status === 'cancelled' ? document.getElementById('task-reason').value : '';
+    const links = document.getElementById('task-links').value;
+    const feedback = document.getElementById('task-feedback');
+
+    if (!title || !assignee || !dueDate) {
+        feedback.textContent = '请填写必填项';
+        return;
+    }
+
+    if (currentTaskId) {
+        const task = tasks.find(t => t.id === currentTaskId);
+        task.title = title;
+        task.description = description;
+        task.assignee = assignee;
+        task.dueDate = dueDate;
+        task.priority = priority;
+        task.status = status;
+        task.reason = reason;
+        task.links = links;
+    } else {
+        const id = Date.now();
+        tasks.push({ id, title, description, assignee, dueDate, priority, status, reason, links });
+    }
+
+    saveData(STORAGE_KEYS.TASKS, tasks);
+    closeModal('task-modal');
+    renderKanban();
+}
+
+function deleteTask(id) {
+    if (confirm('确认删除?')) {
+        tasks = tasks.filter(t => t.id !== id);
+        saveData(STORAGE_KEYS.TASKS, tasks);
+        renderKanban();
+    }
+}
+
+// Drag and Drop
+let draggedTask = null;
+
+function dragStart(e) {
+    draggedTask = e.target;
+    e.dataTransfer.setData('text/plain', '');
+}
+
+function dragOver(e) {
+    e.preventDefault();
+}
+
+function drop(e) {
+    e.preventDefault();
+    const column = e.target.closest('.column');
+    if (column && draggedTask) {
+        const newStatus = column.dataset.status;
+        const id = parseInt(draggedTask.dataset.id);
+        const task = tasks.find(t => t.id === id);
+        task.status = newStatus;
+        if (newStatus === 'cancelled' && !task.reason) {
+            task.reason = prompt('请输入取消/搁置原因');
+        }
+        saveData(STORAGE_KEYS.TASKS, tasks);
+        renderKanban();
+    }
+}
+
+// Log Functions
+function renderLogs() {
+    const tbody = document.getElementById('log-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    logs.forEach(log => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${log.date}</td>
+            <td>${log.assignee}</td>
+            <td>${log.category}</td>
+            <td>${log.description}</td>
+            <td><a href="${log.link}" target="_blank">${log.link ? '查看' : ''}</a></td>
+            <td>${log.status}</td>
+            <td>${log.notes}</td>
+            <td>
+                <button class="edit-log">编辑</button>
+                <button class="delete-log">删除</button>
+            </td>
+        `;
+        tr.querySelector('.edit-log').addEventListener('click', () => openEditLogModal(log.id));
+        tr.querySelector('.delete-log').addEventListener('click', () => deleteLog(log.id));
+        tbody.appendChild(tr);
+    });
+}
+
+function openAddLogModal() {
+    currentLogId = null;
+    document.getElementById('log-modal-title').textContent = '添加日志';
+    clearLogModal();
+    showModal('log-modal');
+}
+
+function openEditLogModal(id) {
+    const log = logs.find(l => l.id === id);
+    currentLogId = id;
+    document.getElementById('log-modal-title').textContent = '编辑日志';
+    document.getElementById('log-date').value = log.date;
+    document.getElementById('log-assignee').value = log.assignee;
+    document.getElementById('log-category').value = log.category;
+    document.getElementById('log-description').value = log.description;
+    document.getElementById('log-link').value = log.link;
+    document.getElementById('log-status').value = log.status;
+    document.getElementById('log-notes').value = log.notes;
+    showModal('log-modal');
+}
+
+function clearLogModal() {
+    document.getElementById('log-date').value = '';
+    document.getElementById('log-assignee').value = '';
+    document.getElementById('log-category').value = '';
+    document.getElementById('log-description').value = '';
+    document.getElementById('log-link').value = '';
+    document.getElementById('log-status').value = '';
+    document.getElementById('log-notes').value = '';
+    document.getElementById('log-feedback').textContent = '';
+}
+
+function saveLog() {
+    const date = document.getElementById('log-date').value;
+    const assignee = document.getElementById('log-assignee').value;
+    const category = document.getElementById('log-category').value;
+    const description = document.getElementById('log-description').value;
+    const link = document.getElementById('log-link').value;
+    const status = document.getElementById('log-status').value;
+    const notes = document.getElementById('log-notes').value;
+    const feedback = document.getElementById('log-feedback');
+
+    if (!date || !assignee || !description) {
+        feedback.textContent = '请填写必填项';
+        return;
+    }
+
+    if (currentLogId) {
+        const log = logs.find(l => l.id === currentLogId);
+        log.date = date;
+        log.assignee = assignee;
+        log.category = category;
+        log.description = description;
+        log.link = link;
+        log.status = status;
+        log.notes = notes;
+    } else {
+        const id = Date.now();
+        logs.push({ id, date, assignee, category, description, link, status, notes });
+    }
+
+    saveData(STORAGE_KEYS.LOGS, logs);
+    closeModal('log-modal');
+    renderLogs();
+}
+
+function deleteLog(id) {
+    if (confirm('确认删除?')) {
+        logs = logs.filter(l => l.id !== id);
+        saveData(STORAGE_KEYS.LOGS, logs);
+        renderLogs();
+    }
+}
+
+// Points Functions
+function renderPoints() {
+    const tbody = document.getElementById('points-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    let total = 0;
+    points.forEach(point => {
+        total += point.change;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${point.date}</td>
+            <td>${point.name}</td>
+            <td>${point.item}</td>
+            <td>${point.change}</td>
+            <td>${point.reason}</td>
+            <td>${point.confirmed}</td>
+            <td>
+                <button class="edit-point">编辑</button>
+                <button class="delete-point">删除</button>
+            </td>
+        `;
+        tr.querySelector('.edit-point').addEventListener('click', () => openEditPointModal(point.id));
+        tr.querySelector('.delete-point').addEventListener('click', () => deletePoint(point.id));
+        tbody.appendChild(tr);
+    });
+    document.getElementById('total-points').textContent = `班级当前总积分：${total}`;
+}
+
+function openAddPointModal() {
+    currentPointId = null;
+    document.getElementById('point-modal-title').textContent = '添加积分记录';
+    clearPointModal();
+    showModal('point-modal');
+}
+
+function openEditPointModal(id) {
+    const point = points.find(p => p.id === id);
+    currentPointId = id;
+    document.getElementById('point-modal-title').textContent = '编辑积分记录';
+    document.getElementById('point-date').value = point.date;
+    document.getElementById('point-name').value = point.name;
+    document.getElementById('point-item').value = point.item;
+    document.getElementById('point-change').value = point.change;
+    document.getElementById('point-reason').value = point.reason;
+    document.getElementById('point-confirmed').value = point.confirmed;
+    showModal('point-modal');
+}
+
+function clearPointModal() {
+    document.getElementById('point-date').value = '';
+    document.getElementById('point-name').value = '';
+    document.getElementById('point-item').value = '';
+    document.getElementById('point-change').value = '';
+    document.getElementById('point-reason').value = '';
+    document.getElementById('point-confirmed').value = '';
+    document.getElementById('point-feedback').textContent = '';
+}
+
+function savePoint() {
+    const date = document.getElementById('point-date').value;
+    const name = document.getElementById('point-name').value;
+    const item = document.getElementById('point-item').value;
+    const change = parseInt(document.getElementById('point-change').value);
+    const reason = document.getElementById('point-reason').value;
+    const confirmed = document.getElementById('point-confirmed').value;
+    const feedback = document.getElementById('point-feedback');
+
+    if (!date || !name || !item || isNaN(change)) {
+        feedback.textContent = '请填写必填项';
+        return;
+    }
+
+    if (currentPointId) {
+        const point = points.find(p => p.id === currentPointId);
+        point.date = date;
+        point.name = name;
+        point.item = item;
+        point.change = change;
+        point.reason = reason;
+        point.confirmed = confirmed;
+    } else {
+        const id = Date.now();
+        points.push({ id, date, name, item, change, reason, confirmed });
+    }
+
+    saveData(STORAGE_KEYS.POINTS, points);
+    closeModal('point-modal');
+    renderPoints();
+}
+
+function deletePoint(id) {
+    if (confirm('确认删除?')) {
+        points = points.filter(p => p.id !== id);
+        saveData(STORAGE_KEYS.POINTS, points);
+        renderPoints();
+    }
+}
